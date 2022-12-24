@@ -1,0 +1,76 @@
+---
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: github-actions-workflows-docker-ecr-spacelift
+
+# Tags of this project
+tags:
+  - github-action
+  - release workflows
+  - Docker
+  - ECR
+  - Spacelift
+  - CI/CD
+
+# Logo for this project
+#logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/github-actions-workflows-docker-ecr-spacelift
+
+# Badges to display
+badges:
+  - name: "Latest Release"
+    image: "https://img.shields.io/github/release/cloudposse/github-actions-workflows-docker-ecr-spacelift.svg"
+    url: "https://github.com/cloudposse/github-actions-workflows-docker-ecr-spacelift/releases/latest"
+  - name: "Slack Community"
+    image: "https://slack.cloudposse.com/badge.svg"
+    url: "https://slack.cloudposse.com"
+
+related:
+  - name: "github-actions-workflows"
+    description: "Reusable workflows for different types of projects"
+    url: "https://github.com/cloudposse/github-actions-workflows"
+
+# Short description of this project
+description: |-
+  Release workflow for Dockerized application using ECR and deploying with Spacelift.
+
+introduction: |-
+  Use provided [GitHub Actions reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) 
+  to implement consistent release workflow for any kind of application that use 
+  * [Docker](https://docs.docker.com/engine/reference/builder/) for developing, shipping, and running,
+  * [ECR](https://aws.amazon.com/ecr/) to store the Docker images
+  * [Spacelift](https://spacelift.io/) as CD platform 
+  
+  ## Preconditions
+  
+  Application repository reference this reusable workflows should follows this structure
+  
+  ```
+    .
+    ├── Dockerfile
+    └── test/
+        ├── docker-compose.yml
+        └── test.sh
+  ```
+
+references:
+  - name: "example-app-on-ecs"
+    description: "Example application for CI/CD demonstrations of GitHub Actions deal with Docker, ECR, ECS and Spacelift"
+    url: "https://github.com/cloudposse/example-app-on-ecs"
+
+include:
+  - "docs/github-actions-reusable-workflows.md"
+
+# Contributors to this project
+contributors:
+  - name: "Igor Rodionov"
+    github: "goruha"
