@@ -3,12 +3,12 @@
 
 | Name | Description |
 |------|-------------|
-| [Features branch (Pull request) workflow ](features-branch-pull-request-workflow) | Build, test Docker image, deploy it with Spacelift to QA environments depends of the PR labels   |
-| [Hotfix branch (Pull request into release/\* branches) workflow ](hotfix-branch-pull-request-into-release-branches-workflow) | Build, test Docker image, deploy it with Spacelift to `hotfix` environment depends of PR labels   |
-| [Hotfix workflow enable](hotfix-workflow-enable) | For each new release create `release/{version}` branch that is key puzzle for `hotfix` workflow. |
-| [Hotfix release workflow](hotfix-release-workflow) | Build, test Docker image, deploy it with Spacelift on `production` environment and reintegrate `hotfix` into the main branch   |
-| [Main branch workflow](main-branch-workflow) | Build, test Docker image, deploy it with Spacelift on `dev` environment and draft new release   |
-| [Release workflow ](release-workflow) | Promote existing Docker image to release version, deploy it with Spacelift to `staging` and then `production` environments.   |
+| [Features branch (Pull request) workflow ](#features-branch-pull-request-workflow) | Build, test Docker image, deploy it with Spacelift to QA environments depends of the PR labels   |
+| [Hotfix branch (Pull request into release/\* branches) workflow ](#hotfix-branch-pull-request-into-release-branches-workflow) | Build, test Docker image, deploy it with Spacelift to `hotfix` environment depends of PR labels   |
+| [Hotfix workflow enable](#hotfix-workflow-enable) | For each new release create `release/{version}` branch that is key puzzle for `hotfix` workflow. |
+| [Hotfix release workflow](#hotfix-release-workflow) | Build, test Docker image, deploy it with Spacelift on `production` environment and reintegrate `hotfix` into the main branch   |
+| [Main branch workflow](#main-branch-workflow) | Build, test Docker image, deploy it with Spacelift on `dev` environment and draft new release   |
+| [Release workflow ](#release-workflow) | Promote existing Docker image to release version, deploy it with Spacelift to `staging` and then `production` environments.   |
 
 
 
