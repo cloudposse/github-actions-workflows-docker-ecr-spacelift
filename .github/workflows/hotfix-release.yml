@@ -23,12 +23,15 @@ name: |-
         with:
           organization: "$\{\{ github.event.repository.owner.login \}\}"
           repository: "$\{\{ github.event.repository.name \}\}"
+          spacelift-organization: "$\{\{ github.event.repository.owner.login \}\}"
         secrets:
           github-private-actions-pat: "$\{\{ secrets.PUBLIC_REPO_ACCESS_TOKEN \}\}"
           registry: "$\{\{ secrets.ECR_REGISTRY \}\}"
           secret-outputs-passphrase: "$\{\{ secrets.GHA_SECRET_OUTPUT_PASSPHRASE \}\}"
           ecr-region: "$\{\{ secrets.ECR_REGION \}\}"
           ecr-iam-role: "$\{\{ secrets.ECR_IAM_ROLE \}\}"
+          spacelift-api-key-id: $\{\{ secrets.SPACELIFT_API_KEY_ID \}\}
+          spacelift-api-key-secret: $\{\{ secrets.SPACELIFT_API_KEY_SECRET \}\}
   ```
 
 on:
