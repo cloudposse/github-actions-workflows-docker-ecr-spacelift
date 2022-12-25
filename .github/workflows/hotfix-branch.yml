@@ -1,29 +1,34 @@
 name: |-
-  Release workflow 
+  Hotfix branch (Pull request into release/* branches) workflow 
   
-  Promote existing Docker image to release version, deploy it with Spacelift to `staging` and then `production` environments.  
+  Build, test Docker image, deploy it with Spacelift to `hotfix` environment depends of PR labels  
   
   ### Usage 
   
-  Create in your repo  __`.github/workflows/release.yaml`__
+  Create in your repo  __`.github/workflows/hotfix-branch.yaml`__
   
   ```yaml
-    name: Release
+    name: Hotfix Branch
     on:
-      release:
-        types: [published]
+      pull_request:
+        branches: [ 'release/**' ]
+        types: [opened, synchronize, reopened, closed, labeled, unlabeled]
     
     permissions:
+      pull-requests: write
+      deployments: write
       id-token: write
-      contents: write
+      contents: read
     
     jobs:
-      perform:
-        uses: cloudposse/github-actions-workflows-docker-ecr-spacelift/.github/workflows/release.yml@main
+      do:
+        uses: cloudposse/github-actions-workflows-docker-ecr-spacelift/.github/workflows/hotfix-branch.yml@main
         with:
           organization: "$\{\{ github.event.repository.owner.login \}\}"
           repository: "$\{\{ github.event.repository.name \}\}"
-          version: $\{\{ github.event.release.tag_name \}\}
+          open: $\{\{ github.event.pull_request.state == 'open' \}\}
+          labels: $\{\{ toJSON(github.event.pull_request.labels.*.name) \}\}
+          ref: $\{\{ github.event.pull_request.head.ref  \}\}
           spacelift-organization: "$\{\{ github.event.repository.owner.login \}\}"
         secrets:
           github-private-actions-pat: "$\{\{ secrets.PUBLIC_REPO_ACCESS_TOKEN \}\}"
@@ -48,10 +53,20 @@ on:
         required: false
         default: ${{ github.event.repository.name }}
         type: string
-      version:
-        description: "Release version tag"
+      ref:
+        description: "The fully-formed ref of the branch or tag that triggered the workflow run"
         required: false
-        default: ${{ github.event.release.tag_name }}
+        default: ${{ github.event.pull_request.head.ref }}
+        type: string
+      open:
+        description: "Pull Request open/close state. Set true if opened"
+        required: false
+        type: boolean
+        default: ${{ github.event.pull_request.state == 'open' }}
+      labels:
+        description: "Pull Request labels"
+        required: false
+        default: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         type: string
       spacelift-organization:
         description: "Spacelift organization name"
@@ -81,8 +96,10 @@ on:
         required: true
 
 permissions:
+  pull-requests: write
+  deployments: write
   id-token: write
-  contents: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}
@@ -90,43 +107,31 @@ concurrency:
 
 jobs:
   ci:
-    uses: cloudposse/github-actions-workflows/.github/workflows/ci-dockerized-app-promote.yml@main
+    uses: cloudposse/github-actions-workflows/.github/workflows/ci-dockerized-app-build.yml@main
     with:
       organization: ${{ inputs.organization }}
       repository: ${{ inputs.repository }}
-      version: ${{ inputs.version }}
     secrets:
       ecr-region: ${{ secrets.ecr-region }}
       ecr-iam-role: ${{ secrets.ecr-iam-role }}
       registry: ${{ secrets.registry }}
       secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
 
-  cd-staging:
-    name: cd / staging
-    uses: cloudposse/github-actions-workflows/.github/workflows/cd-ecs.yml@main
+  cd:
+    uses: cloudposse/github-actions-workflows/.github/workflows/cd-preview-ecs.yml@main
     needs: [ ci ]
+    if: ${{ always() }}
     with:
       image: ${{ needs.ci.outputs.image }}
       tag: ${{ needs.ci.outputs.tag }}
-      repository: ${{ inputs.repository }}
-      environment: staging
       spacelift-organization: ${{ inputs.spacelift-organization }}
-    secrets:
-      secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
-      github-private-actions-pat: ${{ secrets.github-private-actions-pat }}
-      spacelift-api-key-id: "${{ secrets.spacelift-api-key-id }}"
-      spacelift-api-key-secret: "${{ secrets.spacelift-api-key-secret }}"
-
-  cd-production:
-    name: cd / production
-    uses: cloudposse/github-actions-workflows/.github/workflows/cd-ecs.yml@main
-    needs: [ ci, cd-staging ]
-    with:
-      image: ${{ needs.ci.outputs.image }}
-      tag: ${{ needs.ci.outputs.tag }}
       repository: ${{ inputs.repository }}
-      environment: production
-      spacelift-organization: ${{ inputs.spacelift-organization }}
+      open: ${{ inputs.open }}
+      labels: ${{ inputs.labels }}
+      ref: ${{ inputs.ref }}
+      exclusive: true
+      env-label: |
+        hotfix: deploy
     secrets:
       secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
       github-private-actions-pat: ${{ secrets.github-private-actions-pat }}

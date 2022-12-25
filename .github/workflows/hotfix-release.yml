@@ -1,17 +1,17 @@
 name: |-
-  Main branch workflow
+  Hotfix release workflow
   
-  Build, test Docker image, deploy it with Spacelift on `dev` environment and draft new release  
+  Build, test Docker image, deploy it with Spacelift on `production` environment and reintegrate `hotfix` into the main branch  
   
   ### Usage 
   
-  Create in your repo  __`.github/workflows/main.yaml`__
+  Create in your repo  __`.github/workflows/hotfix-release.yaml`__
   
   ```yaml
-    name: Main Branch
+    name: Hotfix Release
     on:
       push:
-        branches: [ master ]
+        branches: [ 'release/**' ]
     
     permissions:
       contents: write
@@ -19,20 +19,16 @@ name: |-
     
     jobs:
       do:
-        uses: cloudposse/github-actions-workflows-docker-ecr-spacelift/.github/workflows/main-branch.yml@main
+        uses: cloudposse/github-actions-workflows-docker-ecr-eks-helmfile/.github/workflows/hotfix-release.yml@main
         with:
-          organization: "$\{\{ github.event.repository.owner.login }}"
-          repository: "$\{\{ github.event.repository.name }}"
-          spacelift-organization: "$\{\{ github.event.repository.owner.login }}"
+          organization: "$\{\{ github.event.repository.owner.login \}\}"
+          repository: "$\{\{ github.event.repository.name \}\}"
         secrets:
-          github-private-actions-pat: "$\{\{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}"
-          registry: "$\{\{ secrets.ECR_REGISTRY }}"
-          secret-outputs-passphrase: "$\{\{ secrets.GHA_SECRET_OUTPUT_PASSPHRASE }}"
-          ecr-region: "$\{\{ secrets.ECR_REGION }}"
-          ecr-iam-role: "$\{\{ secrets.ECR_IAM_ROLE }}"
-          spacelift-api-key-id: $\{\{ secrets.SPACELIFT_API_KEY_ID }}
-          spacelift-api-key-secret: $\{\{ secrets.SPACELIFT_API_KEY_SECRET }}
-
+          github-private-actions-pat: "$\{\{ secrets.PUBLIC_REPO_ACCESS_TOKEN \}\}"
+          registry: "$\{\{ secrets.ECR_REGISTRY \}\}"
+          secret-outputs-passphrase: "$\{\{ secrets.GHA_SECRET_OUTPUT_PASSPHRASE \}\}"
+          ecr-region: "$\{\{ secrets.ECR_REGION \}\}"
+          ecr-iam-role: "$\{\{ secrets.ECR_IAM_ROLE \}\}"
   ```
 
 on:
@@ -40,14 +36,17 @@ on:
     inputs:
       organization:
         description: "Repository owner organization (ex. acme for repo acme/example)"
-        required: false
-        default: ${{ github.event.repository.owner.login }}
+        required: true
         type: string
       repository:
         description: "Repository name (ex. example for repo acme/example)"
-        required: false
-        default: ${{ github.event.repository.name }}
+        required: true
         type: string
+      default_branch:
+        description: "Default branch for this repo"
+        required: true
+        type: string
+        default: main
       spacelift-organization:
         description: "Spacelift organization name"
         type: string
@@ -80,7 +79,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
@@ -95,23 +94,47 @@ jobs:
       registry: ${{ secrets.registry }}
       secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
 
-  cd:
-    uses: cloudposse/github-actions-workflows/.github/workflows/cd-ecs.yml@main
-    needs: [ ci ]
+  release:
+    needs: [ci]
+    uses: cloudposse/github-actions-workflows/.github/workflows/controller-hotfix-release.yml@main
     with:
-      image: ${{ needs.ci.outputs.image }}
-      tag: ${{ needs.ci.outputs.tag }}
+      ref: ${{ github.sha }}
+
+  promote:
+    needs: [release]
+    uses: cloudposse/github-action-workflows/.github/workflows/ci-dockerized-app-promote.yml@main
+    with:
+      organization: ${{ inputs.organization }}
       repository: ${{ inputs.repository }}
-      environment: dev
+      version: ${{ needs.release.outputs.version }}
+    secrets:
+      ecr-region: ${{ secrets.ecr-region }}
+      ecr-iam-role: ${{ secrets.ecr-iam-role }}
+      registry: ${{ secrets.registry }}
+      secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
+
+  cd:
+    name: cd / production
+    uses: cloudposse/github-actions-workflows/.github/workflows/cd-ecs.yml@main
+    needs: [ promote ]
+    with:
+      image: ${{ needs.promote.outputs.image }}
+      tag: ${{ needs.promote.outputs.tag }}
+      repository: ${{ inputs.repository }}
+      environment: production
       spacelift-organization: ${{ inputs.spacelift-organization }}
     secrets:
-      secret-outputs-passphrase: "${{ secrets.secret-outputs-passphrase }}"
-      github-private-actions-pat: "${{ secrets.github-private-actions-pat }}"
+      secret-outputs-passphrase: ${{ secrets.secret-outputs-passphrase }}
+      github-private-actions-pat: ${{ secrets.github-private-actions-pat }}
       spacelift-api-key-id: "${{ secrets.spacelift-api-key-id }}"
       spacelift-api-key-secret: "${{ secrets.spacelift-api-key-secret }}"
 
-  release:
-    uses:  cloudposse/github-actions-workflows/.github/workflows/controller-draft-release.yml@main
-    needs: [ cd ]
+  reintegrate:
+    uses: cloudposse/github-action-workflows/.github/workflows/controller-hotfix-reintegrate.yml@main
+    needs: [cd]
+    with:
+      ref: ${{ github.ref }}
+      target_branch: ${{ inputs.default_branch }}
     secrets:
       github-private-actions-pat: ${{ secrets.github-private-actions-pat }}
+
