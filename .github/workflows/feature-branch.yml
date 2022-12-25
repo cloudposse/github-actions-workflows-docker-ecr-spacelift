@@ -24,20 +24,20 @@ name: |-
       do:
         uses: cloudposse/github-actions-workflows-docker-ecr-spacelift/.github/workflows/feature-branch.yml@main
         with:
-          organization: "${{ github.event.repository.owner.login }}"
-          repository: "${{ github.event.repository.name }}"
-          open: ${{ github.event.pull_request.state == 'open' }}
-          labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-          ref: ${{ github.event.pull_request.head.ref  }}
-          spacelift-organization: "${{ github.event.repository.owner.login }}"
+          organization: "$\{\{ github.event.repository.owner.login \}\}"
+          repository: "$\{\{ github.event.repository.name \}\}"
+          open: $\{\{ github.event.pull_request.state == 'open' \}\}
+          labels: $\{\{ toJSON(github.event.pull_request.labels.*.name) \}\}
+          ref: $\{\{ github.event.pull_request.head.ref  \}\}
+          spacelift-organization: "$\{\{ github.event.repository.owner.login \}\}"
         secrets:
-          github-private-actions-pat: "${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}"
-          registry: "${{ secrets.ECR_REGISTRY }}"
-          secret-outputs-passphrase: "${{ secrets.GHA_SECRET_OUTPUT_PASSPHRASE }}"
-          ecr-region: "${{ secrets.ECR_REGION }}"
-          ecr-iam-role: "${{ secrets.ECR_IAM_ROLE }}"
-          spacelift-api-key-id: ${{ secrets.SPACELIFT_API_KEY_ID }}
-          spacelift-api-key-secret: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
+          github-private-actions-pat: "$\{\{ secrets.PUBLIC_REPO_ACCESS_TOKEN \}\}"
+          registry: "$\{\{ secrets.ECR_REGISTRY \}\}"
+          secret-outputs-passphrase: "$\{\{ secrets.GHA_SECRET_OUTPUT_PASSPHRASE \}\}"
+          ecr-region: "$\{\{ secrets.ECR_REGION \}\}"
+          ecr-iam-role: "$\{\{ secrets.ECR_IAM_ROLE \}\}"
+          spacelift-api-key-id: $\{\{ secrets.SPACELIFT_API_KEY_ID \}\}
+          spacelift-api-key-secret: $\{\{ secrets.SPACELIFT_API_KEY_SECRET \}\}
   ```
 
 on:
