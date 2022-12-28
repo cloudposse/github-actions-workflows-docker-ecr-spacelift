@@ -40,11 +40,13 @@ on:
     inputs:
       organization:
         description: "Repository owner organization (ex. acme for repo acme/example)"
-        required: true
+        required: false
+        default: ${{ github.event.repository.owner.login }}
         type: string
       repository:
         description: "Repository name (ex. example for repo acme/example)"
-        required: true
+        required: false
+        default: ${{ github.event.repository.name }}
         type: string
       spacelift-organization:
         description: "Spacelift organization name"
@@ -111,7 +113,5 @@ jobs:
   release:
     uses:  cloudposse/github-actions-workflows/.github/workflows/controller-draft-release.yml@main
     needs: [ cd ]
-    with:
-      ref: ${{ github.sha }}
     secrets:
       github-private-actions-pat: ${{ secrets.github-private-actions-pat }}
