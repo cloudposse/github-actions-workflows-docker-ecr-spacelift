@@ -40,13 +40,11 @@ on:
     inputs:
       organization:
         description: "Repository owner organization (ex. acme for repo acme/example)"
-        required: false
-        default: ${{ github.event.repository.owner.login }}
+        required: true
         type: string
       repository:
         description: "Repository name (ex. example for repo acme/example)"
-        required: false
-        default: ${{ github.event.repository.name }}
+        required: true
         type: string
       spacelift-organization:
         description: "Spacelift organization name"

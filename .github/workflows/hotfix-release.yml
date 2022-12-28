@@ -47,7 +47,7 @@ on:
         type: string
       default_branch:
         description: "Default branch for this repo"
-        required: true
+        required: false
         type: string
         default: main
       spacelift-organization:
